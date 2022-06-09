@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -30,6 +31,7 @@ import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
 import com.example.playingwithmotionlayout.component.RepoItem
+import com.example.playingwithmotionlayout.component.backgroundColor
 import com.example.playingwithmotionlayout.component.colors
 import com.example.playingwithmotionlayout.component.repos
 import com.example.playingwithmotionlayout.ui.theme.PlayingWithMotionLayoutTheme
@@ -39,12 +41,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PlayingWithMotionLayoutTheme {
-                Box(
+                val lazyScrollState = rememberLazyListState()
+                Scaffold(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xFF2C0723))
+                        .fillMaxSize(),
+                    topBar = {
+                        MotionAppBar(lazyScrollState)
+                    }
                 ) {
-                    MotionAppBar()
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(backgroundColor)
+                            .animateContentSize(),
+                        state = lazyScrollState
+                    ) {
+                        itemsIndexed(repos) { index, item ->
+                            RepoItem(repo = item)
+
+                            if (index != repos.lastIndex)
+                                Divider(modifier = Modifier.padding(8.dp))
+                        }
+                    }
                 }
             }
         }
@@ -53,27 +71,34 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMotionApi::class)
 @Composable
-fun MotionAppBar() {
+fun MotionAppBar(lazyScrollState: LazyListState) {
 
     val context = LocalContext.current
     val motionScene = remember {
         context.resources.openRawResource(R.raw.motion_scene).readBytes().decodeToString()
     }
 
-    val lazyScrollState = rememberLazyListState()
-
-    val progress by animateFloatAsState(targetValue = if(lazyScrollState.firstVisibleItemIndex in 0..4) 0f else 1f, tween(500))
-    val motionHeight by animateDpAsState(targetValue = if(lazyScrollState.firstVisibleItemIndex in 0..4) 300.dp else 56.dp, tween(500))
+    val progress by animateFloatAsState(
+        targetValue = if (lazyScrollState.firstVisibleItemIndex in 0..4) 0f else 1f,
+        tween(500)
+    )
+    val motionHeight by animateDpAsState(
+        targetValue = if (lazyScrollState.firstVisibleItemIndex in 0..4) 300.dp else 56.dp,
+        tween(500)
+    )
 
     // handle composables within motion layout just like xml, first is always on bottom
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
 
         MotionLayout(
             motionScene = MotionScene(content = motionScene),
             progress = progress,
             modifier = Modifier
                 .fillMaxWidth()
+                .background(backgroundColor)
                 .height(motionHeight)
         ) {
 
@@ -110,7 +135,14 @@ fun MotionAppBar() {
                 contentDescription = null,
                 modifier = Modifier
                     .layoutId("weapon_icon")
-                    .background(brush = Brush.radialGradient(colors = listOf(Color.White, Color.Transparent)))
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color.White,
+                                Color.Transparent
+                            )
+                        )
+                    )
             )
 
             Text(
@@ -128,21 +160,6 @@ fun MotionAppBar() {
                     .clip(CircleShape)
                     .layoutId("user_image")
             )
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .animateContentSize(),
-            state = lazyScrollState
-        ) {
-            itemsIndexed(repos) { index, item ->
-                RepoItem(repo = item)
-
-                if (index != repos.lastIndex)
-                    Divider(modifier = Modifier.padding(8.dp))
-
-            }
         }
     }
 }

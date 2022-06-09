@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+val backgroundColor = Color(0xFF2C0723)
 val colors = listOf(Color(0xFF420433), Color(0xFF6D0854))
 
 data class Repo(
@@ -109,6 +110,12 @@ fun RepoItem(
 //static repos
 
 val repos = listOf(
+    Repo(
+      "Reels",
+      "Streaming reel videos like Instagram with Jetpack Compose & ExoPlayer in Android",
+      "Kotlin",
+      8
+    ),
     Repo(
         "clean_architecture_mvvm_jokes_app",
         "Clean Architecture (single module) MVVM Jokes App With Custom Pagination",
